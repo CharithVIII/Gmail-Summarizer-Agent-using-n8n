@@ -1,0 +1,141 @@
+{
+  "name": "Gmail Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize this email in 2 short bullet points. Return ONLY the bullet points, no explanation or thinking process. Subject: {{ $json.subject }} Content: {{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Summarize this email in 2 short bullet points.\nSubject: {{ $json.subject }}\nContent: {{ $json.text }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        864,
+        16
+      ],
+      "id": "8b57e89e-a624-41b9-818c-a340c3d691a3",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "gemma4:e2b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        864,
+        192
+      ],
+      "id": "56fd8563-b1e2-4b1b-832f-73687528097a",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "29nzzTFTPO1nxBYp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        16
+      ],
+      "id": "3bf6b957-cd39-4dea-92de-50623c561cb6",
+      "name": "Gmail Trigger1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1XMx5GhQ9gbvMYTO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.text;\nconst cleaned = text.replace(/https?:\\/\\/\\S+/g, '').replace(/\\s+/g, ' ').trim();\n\nreturn { json: { ...$input.item.json, text: cleaned } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        64
+      ],
+      "id": "6b5b90a5-a8e1-49b3-8ac8-c3476fd1a860",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "2a7d060a-dd3f-4b8f-9381-a77aae0bf60e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "734ab37eb2fbd4ddc652a44fd8a64cd26e3b4eab8257496d4f7043678bac4e94"
+  },
+  "id": "UcqzwOdrRA6vHOP0",
+  "tags": []
+}
